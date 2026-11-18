@@ -37,7 +37,7 @@
       --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
       --card-shadow-hover: 0 20px 40px -10px rgba(255, 107, 0, 0.18), 0 8px 20px -4px rgba(0, 0, 0, 0.06);
       --badge-bg: #F3F4F6;
-      --modal-overlay: rgba(17, 24, 39, 0.82);
+      --modal-overlay: rgba(17, 24, 39, 0.92);
     }
 
     [data-theme="dark"] {
@@ -58,11 +58,11 @@
       --card-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
       --card-shadow-hover: 0 22px 45px -10px rgba(255, 107, 0, 0.25), 0 8px 24px -4px rgba(0, 0, 0, 0.7);
       --badge-bg: #27272A;
-      --modal-overlay: rgba(0, 0, 0, 0.88);
+      --modal-overlay: rgba(0, 0, 0, 0.94);
     }
 
     /* ==========================================================================
-       2. RESET & BASE
+       2. RESET & BASE (CORRIGIDO COM ASTERISCO *)
        ========================================================================== */
     * {
       margin: 0;
@@ -73,7 +73,7 @@
 
     html {
       scroll-behavior: smooth;
-      scroll-padding-top: 96px; /* Evita que a navbar cubra os títulos das seções */
+      scroll-padding-top: 96px;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -787,132 +787,111 @@
     }
 
     /* ==========================================================================
-       8. PLAYER INTEGRADO (SPA MODAL COM IFRAME + LOADING SPINNER)
+       8. TELA DO JOGO (TOPO SLIM COMPACTO & SEM OVERLAY NO MEIO DA TELA)
        ========================================================================== */
     .game-modal {
       position: fixed;
       inset: 0;
       z-index: 999;
-      background: var(--modal-overlay);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      display: flex;
+      background: var(--bg-primary);
+      display: none;
       flex-direction: column;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
     }
 
     .game-modal.open {
-      opacity: 1;
-      pointer-events: auto;
+      display: flex;
     }
 
     .modal-topbar {
-      min-height: 62px;
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border-color);
-      padding: 8px 20px;
+      height: 48px;
+      background: #141416;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
     }
 
     .modal-game-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      min-width: 0;
     }
 
-    .modal-game-info h4 {
-      font-size: 1.05rem;
+    .modal-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 107, 0, 0.16);
+      color: #FF6B00;
       font-weight: 800;
+      font-size: 0.82rem;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .modal-back-btn:hover {
+      background: #FF6B00;
+      color: #FFFFFF;
+    }
+
+    .modal-game-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #F9FAFB;
+      font-size: 0.92rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .modal-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .modal-btn {
-      padding: 8px 14px;
-      border-radius: 11px;
-      background: var(--badge-bg);
-      color: var(--text-primary);
-      font-weight: 700;
-      font-size: 0.85rem;
+      height: 32px;
+      padding: 0 11px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #E4E4E7;
+      font-weight: 600;
+      font-size: 0.8rem;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 5px;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .modal-btn:hover {
-      background: var(--accent);
-      color: #FFFFFF;
-    }
-
-    .modal-btn.close-btn {
-      background: rgba(239, 68, 68, 0.15);
-      color: #EF4444;
-    }
-
-    .modal-btn.close-btn:hover {
-      background: #EF4444;
+      background: #FF6B00;
       color: #FFFFFF;
     }
 
     .iframe-wrapper {
       flex: 1;
       width: 100%;
-      position: relative;
+      height: calc(100vh - 48px);
       background: var(--bg-primary);
-    }
-
-    .iframe-loader {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      background: var(--bg-primary);
-      color: var(--text-secondary);
-      font-weight: 700;
-      font-size: 0.95rem;
-      z-index: 2;
-      transition: opacity 0.25s ease;
-    }
-
-    .iframe-loader.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .spinner {
-      width: 42px;
-      height: 42px;
-      border: 4px solid var(--accent-soft);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
     }
 
     .iframe-wrapper iframe {
       width: 100%;
       height: 100%;
       border: none;
-      position: relative;
-      z-index: 1;
+      display: block;
     }
 
     /* ==========================================================================
@@ -995,7 +974,7 @@
         padding: 44px 0 28px;
       }
       .modal-topbar {
-        padding: 10px 14px;
+        padding: 0 10px;
       }
       .modal-btn span.btn-label-hide-mobile {
         display: none;
@@ -1128,34 +1107,32 @@
     </section>
   </main>
 
-  <!-- 🖥️ MODAL SPA PARA JOGAR SEM SAIR DO SITE -->
+  <!-- 🖥️ TELA DE JOGO INTEGRADA (BARRA SLIM NO TOPO E SEM OVERLAY NO MEIO) -->
   <div class="game-modal" id="gameModal" aria-hidden="true">
     <div class="modal-topbar">
       <div class="modal-game-info">
-        <span id="modalGameIcon" style="font-size: 1.35rem;">🎮</span>
-        <h4 id="modalGameTitle">Nome do Jogo</h4>
+        <button class="modal-back-btn" onclick="closeGameModal()" title="Voltar ao Lobby">
+          ← Lobby
+        </button>
+        <div class="modal-game-title-wrap">
+          <span id="modalGameIcon">🎮</span>
+          <span id="modalGameTitle">Nome do Jogo</span>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="modal-btn" onclick="editRecordForGame(activeGameId)" title="Salvar seu recorde pessoal">
-          🏆 <span class="btn-label-hide-mobile">Registrar Recorde</span>
+          🏆 <span class="btn-label-hide-mobile">Recorde</span>
         </button>
-        <button class="modal-btn" onclick="reloadCurrentIframe()" title="Recarregar partida">
+        <button class="modal-btn" onclick="reloadCurrentIframe()" title="Reiniciar jogo">
           ↻ <span class="btn-label-hide-mobile">Reiniciar</span>
         </button>
-        <a id="modalExternalLink" href="#" target="_blank" rel="noopener" class="modal-btn" title="Abrir jogo em nova guia">
+        <a id="modalExternalLink" href="#" target="_blank" rel="noopener" class="modal-btn" title="Abrir em nova guia">
           ↗ <span class="btn-label-hide-mobile">Nova Aba</span>
         </a>
-        <button class="modal-btn close-btn" onclick="closeGameModal()">
-          ✕ Voltar
-        </button>
       </div>
     </div>
     <div class="iframe-wrapper">
-      <div class="iframe-loader" id="iframeLoader">
-        <div class="spinner"></div>
-        <span>Carregando jogo no K-Pixel Lab...</span>
-      </div>
-      <iframe id="gameIframe" src="about:blank" title="Player K-Pixel Lab" allow="fullscreen; autoplay"></iframe>
+      <iframe id="gameIframe" src="about:blank" title="Jogo K-Pixel Lab" allow="fullscreen; autoplay"></iframe>
     </div>
   </div>
 
@@ -1185,7 +1162,7 @@
   </footer>
 
   <!-- ==========================================================================
-       JAVASCRIPT: DADOS, TEMA, ÁUDIO WEB API, FILTROS E PLAYER SPA
+       JAVASCRIPT: DADOS, TEMA, ÁUDIO WEB API, FILTROS E NAVEGAÇÃO
        ========================================================================== -->
   <script>
     // 1. Catálogo Oficial de 6 Jogos do K-Pixel Lab
@@ -1514,16 +1491,9 @@
       document.getElementById('dailyPlayBtn').onclick = () => openGameModal(dailyGame.id);
     }
 
-    // 9. Player Integrado (Modal SPA com Loading Spinner)
+    // 9. Tela Integrada dos Jogos (Sem Overlay Central)
     const modal = document.getElementById('gameModal');
     const iframe = document.getElementById('gameIframe');
-    const loader = document.getElementById('iframeLoader');
-
-    iframe.addEventListener('load', () => {
-      if (iframe.src && iframe.src !== 'about:blank') {
-        loader.classList.add('hidden');
-      }
-    });
 
     function openGameModal(gameId) {
       const game = GAMES.find(g => g.id === gameId);
@@ -1537,7 +1507,6 @@
       document.getElementById('modalGameTitle').textContent = game.title;
       document.getElementById('modalExternalLink').href = game.url;
 
-      loader.classList.remove('hidden');
       iframe.src = game.url;
 
       modal.classList.add('open');
@@ -1553,7 +1522,6 @@
       playSound('click');
       const game = GAMES.find(g => g.id === activeGameId);
       if (game) {
-        loader.classList.remove('hidden');
         iframe.src = game.url;
       }
     }
@@ -1579,7 +1547,7 @@
       }
     });
 
-    // 10. Destaque Automático do Menu na Rolagem (ScrollSpy)
+    // 10. Destaque Automático do Menu na Rolagem
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
