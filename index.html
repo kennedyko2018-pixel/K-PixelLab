@@ -659,17 +659,6 @@
       background: var(--accent-soft);
     }
 
-    /* CARD EM BREVE (PLACEHOLDER) */
-    .game-card.coming-soon {
-      border-style: dashed;
-      opacity: 0.85;
-    }
-
-    .game-card.coming-soon:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-    }
-
     /* ==========================================================================
        7. SEÇÃO DE RECORDES PESSOAIS & SOBRE
        ========================================================================== */
@@ -958,7 +947,7 @@
       </div>
 
       <div class="hero-stats">
-        <div class="stat-pill"><span class="dot"></span> +5 Jogos Disponíveis</div>
+        <div class="stat-pill"><span class="dot"></span> 6 Jogos Disponíveis</div>
         <div class="stat-pill"><span class="dot"></span> 100% Gratuito & Sem Anúncios</div>
         <div class="stat-pill"><span class="dot"></span> Modo Escuro Nativo</div>
       </div>
@@ -968,7 +957,7 @@
     <section class="daily-section">
       <div class="daily-banner">
         <div class="daily-content">
-          <div class="daily-icon" id="dailyIcon">🧩</div>
+          <div class="daily-icon" id="dailyIcon">🧠</div>
           <div class="daily-text">
             <span class="tag">🔥 Desafio do Dia</span>
             <h2 id="dailyTitle">Carregando sugestão...</h2>
@@ -1021,7 +1010,7 @@
           O <strong>K-Pixel Lab</strong> nasceu para reunir passatempos clássicos de lógica, memória e estratégia sob uma identidade visual unificada, limpa e responsiva.
         </p>
         <p style="color: var(--text-secondary); font-size: 0.95rem;">
-          Todos os jogos rodam integrados ao Lobby ou em aba dedicada, com suporte completo a dispositivos móveis e desktop.
+          Todos os 6 jogos rodam integrados ao Lobby ou em aba dedicada, com suporte completo a dispositivos móveis e desktop.
         </p>
       </div>
     </section>
@@ -1065,6 +1054,7 @@
         <a href="#inicio">Início</a>
         <a href="#jogos">Catálogo</a>
         <a href="#recordes">Meus Recordes</a>
+        <a href="https://eisteinkpixellab.vercel.app/" target="_blank" rel="noopener">Teste de Einstein</a>
         <a href="https://2048master.vercel.app/" target="_blank" rel="noopener">2048</a>
         <a href="https://sudokumaster-beta.vercel.app/" target="_blank" rel="noopener">Sudoku</a>
       </div>
@@ -1076,8 +1066,30 @@
        JAVASCRIPT: DADOS, TEMA, ÁUDIO WEB API, FILTROS E PLAYER SPA
        ========================================================================== -->
   <script>
-    // 1. Catálogo Oficial de Jogos do K-Pixel Lab
+    // 1. Catálogo Oficial de 6 Jogos do K-Pixel Lab
     const GAMES = [
+      {
+        id: 'einstein',
+        title: 'Teste de Einstein',
+        category: 'raciocinio',
+        categoryLabel: 'Lógica & Dedução',
+        icon: '🧠',
+        url: 'https://eisteinkpixellab.vercel.app/',
+        desc: 'Cruze as pistas na matriz 5x5 e use pura dedução lógica para resolver o lendário enigma de Einstein.',
+        defaultRecordLabel: 'Melhor Tempo',
+        storageKeys: ['einstein_best', 'kpixel_record_einstein'],
+        artSvg: `
+          <svg width="130" height="115" viewBox="0 0 130 115" fill="none">
+            <rect x="15" y="20" width="28" height="28" rx="6" fill="#FF6B00"/>
+            <rect x="51" y="20" width="28" height="28" rx="6" fill="#FF6B00" fill-opacity="0.2" stroke="#FF6B00" stroke-width="2.5"/>
+            <rect x="87" y="20" width="28" height="28" rx="6" fill="#FF6B00" fill-opacity="0.2" stroke="#FF6B00" stroke-width="2.5"/>
+            <rect x="15" y="58" width="28" height="36" rx="6" fill="#FF6B00" fill-opacity="0.15" stroke="#FF6B00" stroke-width="2"/>
+            <rect x="51" y="58" width="28" height="36" rx="6" fill="#FF6B00"/>
+            <rect x="87" y="58" width="28" height="36" rx="6" fill="#FF6B00" fill-opacity="0.15" stroke="#FF6B00" stroke-width="2"/>
+            <text x="29" y="39" fill="#FFF" font-size="14" font-weight="900" text-anchor="middle">?</text>
+            <text x="65" y="81" fill="#FFF" font-size="15" font-weight="900" text-anchor="middle">✓</text>
+          </svg>`
+      },
       {
         id: 'slidepuzzle',
         title: 'Slide Puzzle Master',
@@ -1176,7 +1188,7 @@
     let activeGameId = null;
     let soundEnabled = localStorage.getItem('kpixel_sound') !== 'off';
 
-    // 2. Sistema de Som Sintetizado (Web Audio API - Zero dependências externas)
+    // 2. Sistema de Som Sintetizado (Web Audio API)
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -1228,7 +1240,6 @@
       themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
     }
 
-    // Carrega preferência salva ou inicia no Modo Escuro Nativo do K-Pixel Lab
     const savedTheme = localStorage.getItem('kpixel_theme') || 'dark';
     applyTheme(savedTheme);
 
@@ -1278,7 +1289,7 @@
       const grid = document.getElementById('gamesGrid');
       const filtered = filter === 'todos' ? GAMES : GAMES.filter(g => g.category === filter);
 
-      let html = filtered.map(game => {
+      grid.innerHTML = filtered.map(game => {
         const record = getGameRecord(game);
         return `
           <article class="game-card" onmouseenter="playSound('hover')">
@@ -1306,36 +1317,6 @@
         `;
       }).join('');
 
-      // Card #6: Espaço Reservado para Próximos Lançamentos
-      if (filter === 'todos') {
-        html += `
-          <article class="game-card coming-soon">
-            <div class="card-cover">
-              <span class="category-badge">Em Desenvolvimento</span>
-              <div class="cover-art">
-                <svg width="90" height="90" viewBox="0 0 90 90" fill="none">
-                  <rect x="15" y="15" width="60" height="60" rx="16" stroke="#FF6B00" stroke-width="3" stroke-dasharray="6 6"/>
-                  <path d="M45 33V57M33 45H57" stroke="#FF6B00" stroke-width="4" stroke-linecap="round"/>
-                </svg>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <div class="card-mini-icon">🚀</div>
-                <h3>Próximo Desafio</h3>
-              </div>
-              <p class="card-desc">Espaço reservado para o próximo lançamento original do estúdio K-Pixel Lab.</p>
-              <div class="card-footer">
-                <button class="btn-play-card" style="opacity: 0.6; cursor: default;">
-                  <span>🔒 Em Breve</span>
-                </button>
-              </div>
-            </div>
-          </article>
-        `;
-      }
-
-      grid.innerHTML = html;
       renderRecordsList();
     }
 
