@@ -62,7 +62,7 @@
     }
 
     /* ==========================================================================
-       2. RESET & BASE (CORRIGIDO COM ASTERISCO *)
+       2. RESET & BASE
        ========================================================================== */
     * {
       margin: 0;
@@ -787,7 +787,7 @@
     }
 
     /* ==========================================================================
-       8. TELA DO JOGO (TOPO SLIM COMPACTO & SEM OVERLAY NO MEIO DA TELA)
+       8. TELA DO JOGO (TOPO SLIM COMPACTO)
        ========================================================================== */
     .game-modal {
       position: fixed;
@@ -1107,7 +1107,7 @@
     </section>
   </main>
 
-  <!-- 🖥️ TELA DE JOGO INTEGRADA (BARRA SLIM NO TOPO E SEM OVERLAY NO MEIO) -->
+  <!-- 🖥️ TELA DE JOGO INTEGRADA -->
   <div class="game-modal" id="gameModal" aria-hidden="true">
     <div class="modal-topbar">
       <div class="modal-game-info">
@@ -1162,9 +1162,27 @@
   </footer>
 
   <!-- ==========================================================================
-       JAVASCRIPT: DADOS, TEMA, ÁUDIO WEB API, FILTROS E NAVEGAÇÃO
+       JAVASCRIPT: FIREBASE INTEGRATION, DADOS, TEMA, ÁUDIO E NAVEGAÇÃO
        ========================================================================== -->
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Configuração oficial do seu Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDEoi9MsErupUyBKx1MwiL-ZXPSfgsMlt8",
+      authDomain: "k-pixellab.firebaseapp.com",
+      projectId: "k-pixellab",
+      storageBucket: "k-pixellab.firebasestorage.app",
+      messagingSenderId: "1033109360755",
+      appId: "1:1033109360755:web:377e14760441bbf6175a06",
+      measurementId: "G-JFLS681KVH"
+    };
+
+    // Inicializa o Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     // 1. Catálogo Oficial de 6 Jogos do K-Pixel Lab
     const GAMES = [
       {
@@ -1291,7 +1309,7 @@
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
-    function playSound(type = 'click') {
+    window.playSound = function(type = 'click') {
       if (!soundEnabled) return;
       try {
         if (!audioCtx) audioCtx = new AudioCtx();
@@ -1347,7 +1365,7 @@
       const current = htmlEl.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       applyTheme(next);
-      playSound('click');
+      window.playSound('click');
     });
 
     // 4. Controle de Áudio
@@ -1364,10 +1382,10 @@
       soundEnabled = !soundEnabled;
       localStorage.setItem('kpixel_sound', soundEnabled ? 'on' : 'off');
       updateAudioUI();
-      if (soundEnabled) playSound('click');
+      if (soundEnabled) window.playSound('click');
     });
 
-    // 5. Leitura e Edição de Recordes no localStorage
+    // 5. Leitura e Envio de Recordes para o Firebase (Nuvem)
     function getGameRecord(game) {
       for (const key of game.storageKeys) {
         const val = localStorage.getItem(key);
@@ -1384,29 +1402,45 @@
       localStorage.setItem(key, current + 1);
     }
 
-    function editRecordForGame(gameId) {
+    // Função global integrada ao Firebase Firestore
+    window.editRecordForGame = async function(gameId) {
       if (!gameId) return;
-      playSound('click');
+      window.playSound('click');
       const game = GAMES.find(g => g.id === gameId);
       if (!game) return;
 
-      const currentRec = localStorage.getItem(`kpixel_record_${game.id}`) || '';
-      const val = prompt(`🏆 Registrar recorde pessoal em ${game.title}\n(${game.recordPlaceholder}):`, currentRec);
-      if (val !== null) {
-        const trimmed = val.trim();
-        if (trimmed) {
-          localStorage.setItem(`kpixel_record_${game.id}`, trimmed);
-        } else {
-          localStorage.removeItem(`kpixel_record_${game.id}`);
-        }
+      const nomeJogador = prompt(`🏆 Digite seu apelido para o Ranking Global em ${game.title}:`, "Jogador");
+      if (!nomeJogador || !nomeJogador.trim()) return;
+
+      const valorPontos = prompt(`Digite sua pontuação ou tempo em ${game.title}\n(${game.recordPlaceholder}):`, "");
+      if (!valorPontos || !valorPontos.trim()) return;
+
+      try {
+        // Salva no navegador local
+        localStorage.setItem(`kpixel_record_${game.id}`, valorPontos.trim());
+
+        // Envia para o Banco de Dados do Firebase na Nuvem
+        await addDoc(collection(db, "ranking_kpixel"), {
+          jogo: game.title,
+          jogoId: game.id,
+          jogador: nomeJogador.trim(),
+          score: valorPontos.trim(),
+          data: new Date().toISOString()
+        });
+
+        alert("🎉 Recorde enviado com sucesso para o Ranking Global do Firebase!");
+        
         const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'todos';
         renderGames(currentFilter);
+      } catch (e) {
+        console.error("Erro ao salvar no Firebase:", e);
+        alert("Erro ao conectar com o banco de dados do Firebase. Veja o console.");
       }
-    }
+    };
 
-    function resetAllRecords() {
-      playSound('click');
-      if (confirm('Deseja limpar todos os seus recordes e contadores de partidas salvos no Lobby?')) {
+    window.resetAllRecords = function() {
+      window.playSound('click');
+      if (confirm('Deseja limpar todos os seus recordes e contadores locais salvos no Lobby?')) {
         GAMES.forEach(g => {
           localStorage.removeItem(`kpixel_record_${g.id}`);
           localStorage.removeItem(`kpixel_plays_${g.id}`);
@@ -1424,7 +1458,7 @@
       grid.innerHTML = filtered.map(game => {
         const record = getGameRecord(game);
         return `
-          <article class="game-card" onmouseenter="playSound('hover')">
+          <article class="game-card" onmouseenter="window.playSound('hover')">
             <div class="card-cover" onclick="openGameModal('${game.id}')" title="Clique para jogar ${game.title}">
               <span class="category-badge">${game.categoryLabel}</span>
               ${record ? `<span class="record-badge">🏆 ${record}</span>` : ''}
@@ -1440,7 +1474,7 @@
                 <button class="btn-play-card" onclick="openGameModal('${game.id}')">
                   <span>▶ Jogar Agora</span>
                 </button>
-                <a href="${game.url}" target="_blank" rel="noopener" class="btn-ext-link" title="Abrir ${game.title} em nova guia" onclick="playSound('click')">
+                <a href="${game.url}" target="_blank" rel="noopener" class="btn-ext-link" title="Abrir ${game.title} em nova guia" onclick="window.playSound('click')">
                   ↗
                 </a>
               </div>
@@ -1457,7 +1491,7 @@
       container.innerHTML = GAMES.map(game => {
         const rec = getGameRecord(game) || 'Sem registro';
         return `
-          <div class="record-item" onclick="editRecordForGame('${game.id}')" title="Clique para editar seu recorde em ${game.title}">
+          <div class="record-item" onclick="editRecordForGame('${game.id}')" title="Clique para registrar seu recorde em ${game.title}">
             <div class="record-item-left">
               <span>${game.icon}</span>
               <span>${game.title}</span>
@@ -1474,14 +1508,14 @@
     // 7. Filtros de Categoria
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        playSound('click');
+        window.playSound('click');
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         renderGames(btn.dataset.filter);
       });
     });
 
-    // 8. Desafio do Dia (Baseado na data atual)
+    // 8. Desafio do Dia
     function initDailyChallenge() {
       const dayIndex = new Date().getDate() % GAMES.length;
       const dailyGame = GAMES[dayIndex];
@@ -1491,16 +1525,16 @@
       document.getElementById('dailyPlayBtn').onclick = () => openGameModal(dailyGame.id);
     }
 
-    // 9. Tela Integrada dos Jogos (Sem Overlay Central)
+    // 9. Tela Integrada dos Jogos
     const modal = document.getElementById('gameModal');
     const iframe = document.getElementById('gameIframe');
 
-    function openGameModal(gameId) {
+    window.openGameModal = function(gameId) {
       const game = GAMES.find(g => g.id === gameId);
       if (!game) return;
 
-      playSound('launch');
-      activeGameId = game.id;
+      window.playSound('launch');
+      window.activeGameId = game.id;
       incrementPlayCount(game.id);
 
       document.getElementById('modalGameIcon').textContent = game.icon;
@@ -1517,30 +1551,29 @@
       renderGames(currentFilter);
     }
 
-    function reloadCurrentIframe() {
-      if (!activeGameId) return;
-      playSound('click');
-      const game = GAMES.find(g => g.id === activeGameId);
+    window.reloadCurrentIframe = function() {
+      if (!window.activeGameId) return;
+      window.playSound('click');
+      const game = GAMES.find(g => g.id === window.activeGameId);
       if (game) {
         iframe.src = game.url;
       }
     }
 
-    function closeGameModal() {
-      playSound('click');
+    window.closeGameModal = function() {
+      window.playSound('click');
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden', 'true');
       iframe.src = 'about:blank';
       document.body.style.overflow = '';
-      activeGameId = null;
+      window.activeGameId = null;
     }
 
-    function openRandomGame() {
+    window.openRandomGame = function() {
       const random = GAMES[Math.floor(Math.random() * GAMES.length)];
       openGameModal(random.id);
     }
 
-    // Fechar modal com tecla ESC
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && modal.classList.contains('open')) {
         closeGameModal();
@@ -1551,7 +1584,7 @@
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
-        playSound('click');
+        window.playSound('click');
         navLinks.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
       });
